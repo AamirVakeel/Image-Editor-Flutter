@@ -10,10 +10,16 @@ class Draw extends StatefulWidget {
 }
 
 class _DrawState extends State<Draw> {
+  List<String> imgList = [
+    "Assets/1.jpg",
+    "Assets/2.jpg",
+    "Assets/3.jpg",
+    "Assets/4.jpg",
+  ];
   Color selectedColor = Colors.black;
   Color pickerColor = Colors.black;
   double strokeWidth = 3.0;
-  List<DrawingPoints> points = List();
+  List<List<DrawingPoints>> points = [];
   bool showBottomList = false;
   double opacity = 1.0;
   StrokeCap strokeCap = (Platform.isAndroid) ? StrokeCap.butt : StrokeCap.round;
@@ -23,10 +29,15 @@ class _DrawState extends State<Draw> {
     Colors.green,
     Colors.blue,
     Colors.amber,
-    Colors.black
+    Colors.black,
   ];
+
+  int selectedIndex = 0;
   @override
   Widget build(BuildContext context) {
+    imgList.forEach((element) {
+      points.add([]);
+    });
     return Scaffold(
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -75,7 +86,7 @@ class _DrawState extends State<Draw> {
                           onPressed: () {
                             setState(() {
                               showBottomList = false;
-                              points.clear();
+                              points[selectedIndex].clear();
                             });
                           }),
                     ],
@@ -114,13 +125,13 @@ class _DrawState extends State<Draw> {
             children: [
               Align(
                 alignment: Alignment.center,
-                child: Image.asset("Assets/sample.jpeg"),
+                child: Image.asset(imgList[selectedIndex]),
               ),
               GestureDetector(
                 onPanUpdate: (details) {
                   setState(() {
                     RenderBox renderBox = context.findRenderObject();
-                    points.add(DrawingPoints(
+                    points[selectedIndex].add(DrawingPoints(
                         points: renderBox.globalToLocal(details.globalPosition),
                         paint: Paint()
                           ..strokeCap = strokeCap
@@ -132,7 +143,7 @@ class _DrawState extends State<Draw> {
                 onPanStart: (details) {
                   setState(() {
                     RenderBox renderBox = context.findRenderObject();
-                    points.add(DrawingPoints(
+                    points[selectedIndex].add(DrawingPoints(
                         points: renderBox.globalToLocal(details.globalPosition),
                         paint: Paint()
                           ..strokeCap = strokeCap
@@ -143,19 +154,33 @@ class _DrawState extends State<Draw> {
                 },
                 onPanEnd: (details) {
                   setState(() {
-                    points.add(null);
+                    points[selectedIndex].add(null);
                   });
                 },
                 child: CustomPaint(
                   size: Size.infinite,
                   painter: DrawingPainter(
-                    pointsList: points,
+                    pointsList: points[selectedIndex],
                   ),
                 ),
               ),
             ],
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          if (selectedIndex == imgList.length - 1) {
+            this.setState(() {
+              selectedIndex = 0;
+            });
+          } else {
+            this.setState(() {
+              selectedIndex += 1;
+            });
+          }
+        },
+        child: Text("$selectedIndex"),
       ),
     );
   }
